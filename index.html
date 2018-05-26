@@ -1,0 +1,254 @@
+<html>
+<head>
+    <title>Alchemy</title>
+    <script src="util.js"></script>
+    <style>
+        body{
+            margin: 5px;
+            overflow: hidden;
+        }
+        canvas {
+        }
+        p{
+            margin: 1px
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas" width="640" height="480"></canvas>
+    <p>This game is inspired in <a href="http://www.zachtronics.com/the-codex-of-alchemical-engineering/" title="The Codex of Alchemical Engineering">The Codex of Alchemical Engineering</a> from Zachtronics.
+    </p>
+    <button onclick="execute = !execute">Toogle Auto</button>
+    <p>Instructions: (only when Auto is disabled)<br>
+    Arrow keys: move grabber<br>
+    A: rotate the substance.<br>
+    C/O: Close/Open the grabber.<br>
+    B: bind the atoms.
+    K: remove substance.
+    <script>
+        var canvas = document.getElementById("canvas");
+        var ctx = canvas.getContext("2d");
+        ctx.imageSmoothingEnabled = false;
+
+        subs_list = []
+
+        function bind(at1,at2) {
+            mol1 = subs_list[at1]
+            mol2 = subs_list[at2]
+            subs_list.push(new Substance(mol1.atoms.concat(mol2.atoms)))
+            subs_list[at1] = null
+            subs_list[at2] = null
+            shine = 20
+        }
+
+        water = new Atom(Atoms.water,4,2)
+        stone = new Atom(Atoms.stone,3,2)
+        fire = new Atom(Atoms.fire,2,2)
+
+        spawn = {
+            cycle: 0,
+            type: Atoms.stone,
+            x:4,
+            y:3
+        }
+
+        tcycle = 0
+        /* l: left
+           r: right
+           u: up
+           d: down
+           1: rotate
+           c: close
+           o: open
+           b: bind
+           k: kill/output
+        */
+        inst = 'drrcllorrclblorrclblorrclbdkur'
+        init = 3
+        instpc = 0
+
+        execute = true
+        shine = 0
+
+        grab = new Grabber(2,2)
+
+        function close() {
+            for (var i = subs_list.length - 1; i >= 0; i--) {
+                if(subs_list[i]==null) continue
+                for (var j = subs_list[i].atoms.length - 1; j >= 0; j--) {
+                    at = subs_list[i].atoms[j]
+                    if(at.x==grab.x && at.y==grab.y){
+                        grab.child = subs_list[i]
+                        grab.closed = true
+                    } 
+                }
+            };
+        }
+        function kill() {
+            grab.child = null
+            grab.closed = false
+            for (var i = subs_list.length - 1; i >= 0; i--) {
+                if(subs_list[i]==null) continue
+                for (var j = subs_list[i].atoms.length - 1; j >= 0; j--) {
+                    at = subs_list[i].atoms[j]
+                    if(at.x==grab.x && at.y==grab.y){
+                        subs_list[i] = null
+                    } 
+                }
+            };
+        }
+
+        function open() {
+            grab.closed = false
+            grab.child = null
+        }
+
+        function step() {
+            if(instpc==inst.length){
+                instpc = init;
+            }
+            c = inst[instpc]
+
+            if(c=='c') close();
+            else if(c=='o') open();
+            else if(c=='l') grab.moveLeft();
+            else if(c=='r') grab.moveRight();
+            else if(c=='u') grab.moveUp();
+            else if(c=='d') grab.moveDown();
+            else if(c=='1') grab.rotate();
+            else if(c=='k') kill();
+            else if(c=='b'){
+                a1 = null
+                a2 = null
+                for (var i = subs_list.length - 1; i >= 0; i--) {
+                    for (var j = subs_list[i].atoms.length - 1; j >= 0; j--) {
+                        at = subs_list[i].atoms[j]
+                        if(at.x==2 && at.y==3){
+                            a1 = i
+                        }
+                        if(at.x==3 && at.y==3){
+                            a2 = i
+                        }
+                    }
+                }
+                if(a1!=a2){
+                    if(a1!=null && a2!=null){
+                        open()
+                        bind(a1,a2)
+                        close()
+                    }
+                }
+            }
+
+            instpc++
+        }
+
+        function update(e){
+            if(tcycle==21){
+                tcycle=0
+                if(execute) step()
+            }
+
+            ctx.fillStyle = '#fff8bf'
+            ctx.fillRect(0,0,640,480);
+            
+
+            ctx.lineWidth = 1;
+            for (var i = 20; i < canvas.width; i+=40) {
+                ctx.beginPath()
+                ctx.moveTo(i,0)
+                ctx.lineTo(i,480)
+                ctx.stroke()
+            };
+            for (var j = 20; j < canvas.height; j+=40) {
+                ctx.beginPath()
+                ctx.moveTo(0,j)
+                ctx.lineTo(640,j)
+                ctx.stroke()
+            };
+
+            grab.update()
+
+            if (shine>0) {
+                ctx.globalAlpha = 1/shine
+                shine--
+            };
+            ctx.drawImage(mach,0,20,40,20,2*40,3*40,80,40);
+            ctx.globalAlpha = 1
+
+            ctx.globalAlpha = 0.7
+            ctx.drawAtom(atomsheet,Atoms.stone.x,Atoms.stone.y,0,4)
+            ctx.drawAtom(atomsheet,Atoms.stone.x,Atoms.stone.y,1,4)
+            ctx.drawAtom(atomsheet,Atoms.stone.x,Atoms.stone.y,2,4)
+            ctx.drawAtom(atomsheet,Atoms.stone.x,Atoms.stone.y,3,4)
+            ctx.globalAlpha = 1
+
+            for (var i = subs_list.length - 1; i >= 0; i--) {
+                if(subs_list[i]==null){
+                    subs_list.splice(i,1)
+                    continue
+                }
+                for (var j = subs_list[i].atoms.length - 1; j >= 0; j--) {
+                    at = subs_list[i].atoms[j]
+                    ctx.drawAtom(atomsheet,at.type.x,at.type.y,at.x,at.y)
+                    at.update()
+                }
+            };
+
+            if(grab.closed) ctx.drawGrab(mach,1,0,grab.x*40,grab.y*40)
+            else ctx.drawGrab(mach,0,0,grab.x*40,grab.y*40)
+
+            if(spawn.cycle==0){
+                subs_list.push(new Substance([new Atom(spawn.type,spawn.x,spawn.y)]))
+                spawn.cycle = 20
+            }else{
+                fill = false
+                for (var i = subs_list.length - 1; i >= 0; i--) {
+                    if(subs_list[i].atoms[0].x==spawn.x && subs_list[i].atoms[0].y==spawn.y){
+                        fill = true
+                    }
+                };
+                if (fill==false) {
+                    spawn.cycle--
+                };
+            }
+            tcycle++
+        }
+        setInterval(update, 1000/60);
+
+        document.addEventListener("keydown", function (e) {
+            if(execute) return
+            if(e.key == "ArrowLeft" && e.repeat==false) grab.moveLeft()
+            else if(e.key == "ArrowRight" && e.repeat==false) grab.moveRight()
+            else if(e.key == "ArrowUp" && e.repeat==false) grab.moveUp()
+            else if(e.key == "ArrowDown" && e.repeat==false) grab.moveDown()
+            if(e.key == "x") close()
+            if(e.key == "k") kill()
+            if(e.key == "z" && grab.t==0) open()
+            if(e.key == "a" && grab.t==0) grab.rotate()
+            if(e.key == "b" && grab.t==0){
+                a1 = null
+                a2 = null
+                for (var i = subs_list.length - 1; i >= 0; i--) {
+                    for (var j = subs_list[i].atoms.length - 1; j >= 0; j--) {
+                        at = subs_list[i].atoms[j]
+                        if(at.x==2 && at.y==3){
+                            a1 = i
+                        }
+                        if(at.x==3 && at.y==3){
+                            a2 = i
+                        }
+                    }
+                }
+                if(a1!=a2){
+                    if(a1!=null && a2!=null){
+                        open()
+                        bind(a1,a2)
+                        close()
+                    }
+                }
+            }
+        }, false);
+    </script>
+</body>
+</html>
