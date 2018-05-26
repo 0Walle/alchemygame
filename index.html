@@ -41,14 +41,14 @@
             shine = 20
         }
 
-        water = new Atom(Atoms.water,4,2)
-        stone = new Atom(Atoms.stone,3,2)
-        fire = new Atom(Atoms.fire,2,2)
+        //water = new Atom(Atoms.water,4,2)
+        //stone = new Atom(Atoms.stone,3,2)
+        //fire = new Atom(Atoms.fire,2,2)
 
         spawn = {
             cycle: 0,
             type: Atoms.stone,
-            x:4,
+            x:6,
             y:3
         }
 
@@ -70,7 +70,7 @@
         execute = true
         shine = 0
 
-        grab = new Grabber(2,2)
+        grab = new Grabber(4,2)
 
         function close() {
             for (var i = subs_list.length - 1; i >= 0; i--) {
@@ -123,10 +123,10 @@
                 for (var i = subs_list.length - 1; i >= 0; i--) {
                     for (var j = subs_list[i].atoms.length - 1; j >= 0; j--) {
                         at = subs_list[i].atoms[j]
-                        if(at.x==2 && at.y==3){
+                        if(at.x==4 && at.y==3){
                             a1 = i
                         }
-                        if(at.x==3 && at.y==3){
+                        if(at.x==5 && at.y==3){
                             a2 = i
                         }
                     }
@@ -151,7 +151,6 @@
 
             ctx.fillStyle = '#fff8bf'
             ctx.fillRect(0,0,640,480);
-            
 
             ctx.lineWidth = 1;
             for (var i = 20; i < canvas.width; i+=40) {
@@ -173,14 +172,14 @@
                 ctx.globalAlpha = 1/shine
                 shine--
             };
-            ctx.drawImage(mach,0,20,40,20,2*40,3*40,80,40);
+            ctx.drawImage(mach,0,20,40,20,4*40,3*40,80,40);
             ctx.globalAlpha = 1
 
             ctx.globalAlpha = 0.7
-            ctx.drawAtom(atomsheet,Atoms.stone.x,Atoms.stone.y,0,4)
-            ctx.drawAtom(atomsheet,Atoms.stone.x,Atoms.stone.y,1,4)
             ctx.drawAtom(atomsheet,Atoms.stone.x,Atoms.stone.y,2,4)
             ctx.drawAtom(atomsheet,Atoms.stone.x,Atoms.stone.y,3,4)
+            ctx.drawAtom(atomsheet,Atoms.stone.x,Atoms.stone.y,4,4)
+            ctx.drawAtom(atomsheet,Atoms.stone.x,Atoms.stone.y,5,4)
             ctx.globalAlpha = 1
 
             for (var i = subs_list.length - 1; i >= 0; i--) {
@@ -232,10 +231,10 @@
                 for (var i = subs_list.length - 1; i >= 0; i--) {
                     for (var j = subs_list[i].atoms.length - 1; j >= 0; j--) {
                         at = subs_list[i].atoms[j]
-                        if(at.x==2 && at.y==3){
+                        if(at.x==4 && at.y==3){
                             a1 = i
                         }
-                        if(at.x==3 && at.y==3){
+                        if(at.x==5 && at.y==3){
                             a2 = i
                         }
                     }
